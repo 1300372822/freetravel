@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qf.dao.ItemMapper">
+  <resultMap id="BaseResultMap" type="com.qf.bean.Item">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="title" jdbcType="VARCHAR" property="title" />
+    <result column="price" jdbcType="DOUBLE" property="price" />
+    <result column="des" jdbcType="VARCHAR" property="des" />
+    <result column="address" jdbcType="VARCHAR" property="address" />
+    <result column="like" jdbcType="INTEGER" property="like" />
+    <result column="publish" jdbcType="TIMESTAMP" property="publish" />
+    <result column="sale" jdbcType="INTEGER" property="sale" />
+    <result column="uid" jdbcType="INTEGER" property="uid" />
+    <result column="fuid" jdbcType="INTEGER" property="fuid" />
+    <result column="fdes" jdbcType="VARCHAR" property="fdes" />
+    <result column="fiid" jdbcType="INTEGER" property="fiid" />
+    <result column="colcount" jdbcType="INTEGER" property="colcount" />
+    <collection property="ordersList" ofType="com.qf.bean.Orders">
+      <id column="id" jdbcType="INTEGER" property="id"></id>
+      <result column="orderdate" jdbcType="TIMESTAMP" property="orderdate"></result>
+      <result column="uid" jdbcType="INTEGER" property="uid"></result>
+      <result column="contact" jdbcType="VARCHAR" property="contact"></result>
+      <result column="cphone" jdbcType="VARCHAR" property="cphone"></result>
+      <result column="qq" jdbcType="VARCHAR" property="qq"></result>
+      <result column="wx" jdbcType="VARCHAR" property="wx"></result>
+      <result column="iid" jdbcType="INTEGER" property="iid"></result>
+      <result column="traveldate" jdbcType="DATE" property="traveldate"></result>
+      <result column="status" jdbcType="INTEGER" property="status"></result>
+    </collection>
+    <collection property="imagesList" ofType="com.qf.bean.Images">
+      <id column="id" jdbcType="INTEGER" property="id"></id>
+      <result column="imageurl" jdbcType="VARCHAR" property="imageurl"></result>
+      <result column="iid" jdbcType="INTEGER" property="iid"></result>
+    </collection>
+    <collection property="labelsList" ofType="com.qf.bean.Labels">
+      <id column="id" jdbcType="INTEGER" property="id"></id>
+      <result column="iname" jdbcType="VARCHAR" property="iname"></result>
+      <result column="iid" jdbcType="INTEGER" property="iid"></result>
+    </collection>
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, title, price, des, address, `like`, publish, sale, uid, fuid, fdes, fiid, colcount
+  </sql>
+
+  <!--查询个人发布数-->
+  <select id="findPublishCount" resultType="java.lang.Integer">
+    select COUNT(*) from item
+    where uid = #{id}
+    and fuid is null
+  </select>
+  <!--查询个人转发数-->
+  <select id="findForwardCount" resultType="java.lang.Integer">
+    select COUNT(*) from item
+    where fuid = #{id}
+  </select>
+  <!--查询个人售出数-->
+  <select id="findSaleCount" resultType="java.lang.Integer">
+    select COUNT(*) from orders o,item i
+    where o.iid=i.id
+    and i.uid=#{id}
+  </select>
+  <!--查询热门-->
+  <select id="findhot" resultType="com.qf.bean.Item">
+    select id,title,des,address,`like`,publish from item
+    order by `like` desc
+  </select>
+  <!--查询国内-->
+  <select id="finddomestic" resultType="com.qf.bean.Item">
+    select i.id,title,des,address,`like`,publish from item i,
+    (select i.id, COUNT(*) salecount from orders o,item i
+    where o.iid=i.id
+    group by i.id) as temp
+    where temp.id=i.id
+    order by temp.salecount desc
+  </select>
+  <!--查询国内-->
+  <select id="findnearby" resultType="com.qf.bean.Item">
+    select id,title,des,address,`like`,publish from item
+    where address like '%${address}%'
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from item
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from item
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.qf.bean.Item">
+    insert into item (id, title, price, 
+      des, address, `like`,
+      publish, sale, uid, 
+      fuid, fdes, fiid, colcount
+      )
+    values (#{id,jdbcType=INTEGER}, #{title,jdbcType=VARCHAR}, #{price,jdbcType=DOUBLE}, 
+      #{des,jdbcType=VARCHAR}, #{address,jdbcType=VARCHAR}, #{like,jdbcType=INTEGER}, 
+      #{publish,jdbcType=TIMESTAMP}, #{sale,jdbcType=INTEGER}, #{uid,jdbcType=INTEGER}, 
+      #{fuid,jdbcType=INTEGER}, #{fdes,jdbcType=VARCHAR}, #{fiid,jdbcType=INTEGER}, #{colcount,jdbcType=INTEGER}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.qf.bean.Item">
+    insert into item
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="title != null">
+        title,
+      </if>
+      <if test="price != null">
+        price,
+      </if>
+      <if test="des != null">
+        des,
+      </if>
+      <if test="address != null">
+        address,
+      </if>
+      <if test="like != null">
+        `like`,
+      </if>
+      <if test="publish != null">
+        publish,
+      </if>
+      <if test="sale != null">
+        sale,
+      </if>
+      <if test="uid != null">
+        uid,
+      </if>
+      <if test="fuid != null">
+        fuid,
+      </if>
+      <if test="fdes != null">
+        fdes,
+      </if>
+      <if test="fiid != null">
+        fiid,
+      </if>
+      <if test="colcount != null">
+        colcount,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="title != null">
+        #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="price != null">
+        #{price,jdbcType=DOUBLE},
+      </if>
+      <if test="des != null">
+        #{des,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null">
+        #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="like != null">
+        #{like,jdbcType=INTEGER},
+      </if>
+      <if test="publish != null">
+        #{publish,jdbcType=TIMESTAMP},
+      </if>
+      <if test="sale != null">
+        #{sale,jdbcType=INTEGER},
+      </if>
+      <if test="uid != null">
+        #{uid,jdbcType=INTEGER},
+      </if>
+      <if test="fuid != null">
+        #{fuid,jdbcType=INTEGER},
+      </if>
+      <if test="fdes != null">
+        #{fdes,jdbcType=VARCHAR},
+      </if>
+      <if test="fiid != null">
+        #{fiid,jdbcType=INTEGER},
+      </if>
+      <if test="colcount != null">
+        #{colcount,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.qf.bean.Item">
+    update item
+    <set>
+      <if test="title != null">
+        title = #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="price != null">
+        price = #{price,jdbcType=DOUBLE},
+      </if>
+      <if test="des != null">
+        des = #{des,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null">
+        address = #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="like != null">
+        `like` = #{like,jdbcType=INTEGER},
+      </if>
+      <if test="publish != null">
+        publish = #{publish,jdbcType=TIMESTAMP},
+      </if>
+      <if test="sale != null">
+        sale = #{sale,jdbcType=INTEGER},
+      </if>
+      <if test="uid != null">
+        uid = #{uid,jdbcType=INTEGER},
+      </if>
+      <if test="fuid != null">
+        fuid = #{fuid,jdbcType=INTEGER},
+      </if>
+      <if test="fdes != null">
+        fdes = #{fdes,jdbcType=VARCHAR},
+      </if>
+      <if test="fiid != null">
+        fiid = #{fiid,jdbcType=INTEGER},
+      </if>
+      <if test="colcount != null">
+        colcount = #{colcount,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.qf.bean.Item">
+    update item
+    set title = #{title,jdbcType=VARCHAR},
+      price = #{price,jdbcType=DOUBLE},
+      des = #{des,jdbcType=VARCHAR},
+      address = #{address,jdbcType=VARCHAR},
+      `like` = #{like,jdbcType=INTEGER},
+      publish = #{publish,jdbcType=TIMESTAMP},
+      sale = #{sale,jdbcType=INTEGER},
+      uid = #{uid,jdbcType=INTEGER},
+      fuid = #{fuid,jdbcType=INTEGER},
+      fdes = #{fdes,jdbcType=VARCHAR},
+      fiid = #{fiid,jdbcType=INTEGER},
+      colcount = #{colcount,jdbcType=INTEGER}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qf.dao.LabelsMapper">
+  <resultMap id="BaseResultMap" type="com.qf.bean.Labels">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="iname" jdbcType="VARCHAR" property="iname" />
+    <result column="iid" jdbcType="INTEGER" property="iid" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, iname, iid
+  </sql>
+  <!--通过商品id查询标签-->
+  <select id="selectByIid" resultMap="BaseResultMap">
+    select id,iname from labels
+    where iid = #{iid}
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from labels
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from labels
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.qf.bean.Labels">
+    insert into labels (id, iname, iid
+      )
+    values (#{id,jdbcType=INTEGER}, #{iname,jdbcType=VARCHAR}, #{iid,jdbcType=INTEGER}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.qf.bean.Labels">
+    insert into labels
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="iname != null">
+        iname,
+      </if>
+      <if test="iid != null">
+        iid,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="iname != null">
+        #{iname,jdbcType=VARCHAR},
+      </if>
+      <if test="iid != null">
+        #{iid,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.qf.bean.Labels">
+    update labels
+    <set>
+      <if test="iname != null">
+        iname = #{iname,jdbcType=VARCHAR},
+      </if>
+      <if test="iid != null">
+        iid = #{iid,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.qf.bean.Labels">
+    update labels
+    set iname = #{iname,jdbcType=VARCHAR},
+      iid = #{iid,jdbcType=INTEGER}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>
