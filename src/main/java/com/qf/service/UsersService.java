@@ -6,6 +6,9 @@ import java.util.Map;
 
 public interface UsersService {
 
+    //通过手机号查询是否已经存在该用户
+    boolean isUserExistByPhone(String phone);
+
     //登录
     Users login(String username);
 

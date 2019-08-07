@@ -22,6 +22,12 @@
     id, username, `password`, upid, des, phone, contact, email, icon, birthday, sex, regdate,
     idcard, realpic, salt
   </sql>
+  <!--通过手机号查询是否已经存在该用户-->
+  <select id="isUserExistByPhone" resultType="java.lang.Integer">
+    select COUNT(*) from users
+    where phone = #{phone}
+  </select>
+
   <select id="login" resultMap="BaseResultMap">
     select * from users where username = #{username}
   </select>

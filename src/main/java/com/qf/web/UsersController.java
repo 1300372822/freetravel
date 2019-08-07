@@ -1,5 +1,13 @@
 package com.qf.web;
 
+import com.aliyuncs.CommonRequest;
+import com.aliyuncs.CommonResponse;
+import com.aliyuncs.DefaultAcsClient;
+import com.aliyuncs.IAcsClient;
+import com.aliyuncs.exceptions.ClientException;
+import com.aliyuncs.exceptions.ServerException;
+import com.aliyuncs.http.MethodType;
+import com.aliyuncs.profile.DefaultProfile;
 import com.qf.bean.DataView;
 import com.qf.bean.Item;
 import com.qf.bean.Users;
@@ -13,12 +21,10 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import javax.xml.registry.infomodel.User;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Description:我页面
@@ -32,6 +38,73 @@ public class UsersController {
     private DataView dataView;
     @Resource
     private UsersService usersService;
+
+    //验证码
+    @RequestMapping(method = RequestMethod.POST,value ="/checkcode")
+    public Map CheckCode(@RequestBody String checkphone,HttpSession session){
+        DefaultProfile profile = DefaultProfile.getProfile("cn-hangzhou", "LTAInjUm9kCq5R2E", "T9LgGR0KY1MZlYhArmRgsREQnVkCwt");
+        IAcsClient client = new DefaultAcsClient(profile);
+
+        CommonRequest request = new CommonRequest();
+        request.setMethod(MethodType.POST);
+        request.setDomain("dysmsapi.aliyuncs.com");
+        request.setVersion("2017-05-25");
+        request.setAction("SendSms");
+        request.putQueryParameter("RegionId", "cn-hangzhou");
+        request.putQueryParameter("PhoneNumbers", checkphone);
+        request.putQueryParameter("SignName", "蜂鸟自由行");
+        request.putQueryParameter("TemplateCode", "SMS_172007796");
+        //生成的6位随机验证码
+        int identifyingcode = (int)((Math.random()*9+1)*100000);
+        session.setAttribute("identifyingcode", identifyingcode);
+        request.putQueryParameter("TemplateParam", "{\"code\":\""+identifyingcode+"\"}");
+        try {
+            CommonResponse response = client.getCommonResponse(request);
+            System.out.println(response.getData());
+        } catch (ServerException e) {
+            e.printStackTrace();
+        } catch (ClientException e) {
+            e.printStackTrace();
+        }
+        Map map = new HashMap();
+        map.put("code", 0);
+        map.put("msg", "成功");
+        map.put("data", identifyingcode);
+        return map;
+    }
+
+    //注册
+    @RequestMapping(method = RequestMethod.POST,value = "/reg")
+    public DataView logon(@RequestBody String phone,@RequestBody String password,int identifyingcode,HttpSession session){
+        int identifyingcode1 = (int) session.getAttribute("identifyingcode");
+        dataView = new DataView();
+        if (usersService.isUserExistByPhone(phone)){
+            dataView.setCode(1);
+            dataView.setMsg("手机号已存在，请更换手机号重新注册！");
+            return dataView;
+        }else {
+            if (identifyingcode==identifyingcode1){
+                Users user = new Users();
+                user.setUsername("小蜂鸟#"+(int)((Math.random()*9+1)*1000));
+                user.setPhone(phone);
+                user.setIcon("usericon/default.jpg");
+                user.setRegdate(new Date());
+                String salt = new RandomSalt().pwdRandom();
+                user.setSalt(salt);
+                Md5Hash md5password = new Md5Hash(password,salt,1);
+                user.setPassword(md5password.toString());
+                session.setAttribute("user", user);
+                dataView.setCode(0);
+                dataView.setMsg("成功");
+                return dataView;
+            }else {
+                dataView.setCode(2);
+                dataView.setMsg("验证码不正确");
+                return dataView;
+            }
+        }
+    }
+
 
     //登录失败
     @RequestMapping(method = RequestMethod.POST,value ="/tologin")

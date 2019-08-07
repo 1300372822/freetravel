@@ -25,6 +25,14 @@ public class UsersServiceImpl implements UsersService {
     @Resource
     private ItemMapper itemMapper;
 
+    @Override
+    public boolean isUserExistByPhone(String phone) {
+        if (usersMapper.isUserExistByPhone(phone)>0){
+            return true;
+        }
+        return false;
+    }
+
     //登录
     @Override
     public Users login(String username) {

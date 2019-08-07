@@ -5,6 +5,10 @@ import com.qf.bean.Users;
 import java.util.List;
 
 public interface UsersMapper {
+
+    //通过手机号查询是否已经存在该用户
+    int isUserExistByPhone(String phone);
+
     //登录
     Users login(String username);
 
