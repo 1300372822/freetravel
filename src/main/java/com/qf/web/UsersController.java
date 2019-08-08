@@ -41,7 +41,7 @@ public class UsersController {
 
     //验证码
     @RequestMapping(method = RequestMethod.POST,value ="/checkcode")
-    public Map CheckCode(@RequestBody String checkphone,HttpSession session){
+    public Map CheckCode( String checkphone,HttpSession session){
         DefaultProfile profile = DefaultProfile.getProfile("cn-hangzhou", "LTAInjUm9kCq5R2E", "T9LgGR0KY1MZlYhArmRgsREQnVkCwt");
         IAcsClient client = new DefaultAcsClient(profile);
 
@@ -75,17 +75,19 @@ public class UsersController {
 
     //注册
     @RequestMapping(method = RequestMethod.POST,value = "/reg")
-    public DataView logon(@RequestBody String phone,@RequestBody String password,int identifyingcode,HttpSession session){
+    public DataView logon( String phone,String password,int identifyingcode,HttpSession session){
         int identifyingcode1 = (int) session.getAttribute("identifyingcode");
         dataView = new DataView();
-        if (usersService.isUserExistByPhone(phone)){
+        if (usersService.isUserExistByPhone(phone)>0){
             dataView.setCode(1);
             dataView.setMsg("手机号已存在，请更换手机号重新注册！");
             return dataView;
         }else {
+            //验证码正确
             if (identifyingcode==identifyingcode1){
+                //设置用户默认信息
                 Users user = new Users();
-                user.setUsername("小蜂鸟#"+(int)((Math.random()*9+1)*1000));
+                user.setUsername("小蜂鸟#"+new Date() + (int)((Math.random()*9+1)*1000));
                 user.setPhone(phone);
                 user.setIcon("usericon/default.jpg");
                 user.setRegdate(new Date());
@@ -93,18 +95,51 @@ public class UsersController {
                 user.setSalt(salt);
                 Md5Hash md5password = new Md5Hash(password,salt,1);
                 user.setPassword(md5password.toString());
-                session.setAttribute("user", user);
-                dataView.setCode(0);
-                dataView.setMsg("成功");
+                int k = usersService.insertSelective(user);
+                if (k>0){
+                    session.setAttribute("user", user);
+                    dataView.setCode(0);
+                    dataView.setMsg("成功");
+                }else {
+                    dataView.setCode(3);
+                    dataView.setMsg("创建新用户失败");
+                }
                 return dataView;
             }else {
                 dataView.setCode(2);
                 dataView.setMsg("验证码不正确");
                 return dataView;
             }
+
         }
     }
 
+    //找回密码
+    @RequestMapping(method = RequestMethod.POST,value = "/findbackpwd")
+    public DataView findbackpwd( String checkphone, String newpwd, int identifyingcode,HttpSession session){
+        int userid = usersService.isUserExistByPhone(checkphone);
+        Users users = usersService.selectByPrimaryKey(userid);
+        int identifyingcode1 = (int) session.getAttribute("identifyingcode");
+        if (identifyingcode1==identifyingcode){
+            String newsalt = new RandomSalt().pwdRandom();
+            Md5Hash newpassword = new Md5Hash(newpwd,newsalt,1);
+            users.setPassword(newpassword.toString());
+            int k = usersService.updateByPrimaryKeySelective(users);
+            dataView = new DataView();
+            if (k>0){
+                session.setAttribute("user",users );
+                dataView.setCode(0);
+                dataView.setMsg("成功");
+            }else{
+                dataView.setCode(1);
+                dataView.setMsg("找回密码失败");
+            }
+        }else{
+            dataView.setCode(2);
+            dataView.setMsg("验证码错误！");
+        }
+        return dataView;
+    }
 
     //登录失败
     @RequestMapping(method = RequestMethod.POST,value ="/tologin")
@@ -232,7 +267,7 @@ public class UsersController {
 
     //修改密码
     @RequestMapping(value = "/updatepassword")
-    public DataView updatePassword(@RequestBody String oldpwd, @RequestBody String newpwd,HttpSession session){
+    public DataView updatePassword( String oldpwd,  String newpwd,HttpSession session){
         dataView = new DataView();
         Users user = (Users) session.getAttribute("user");
         Md5Hash oldpassword = new Md5Hash(oldpwd,user.getSalt(),1);

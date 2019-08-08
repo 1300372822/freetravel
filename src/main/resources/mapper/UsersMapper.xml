@@ -24,7 +24,7 @@
   </sql>
   <!--通过手机号查询是否已经存在该用户-->
   <select id="isUserExistByPhone" resultType="java.lang.Integer">
-    select COUNT(*) from users
+    select COALESCE(max(id),0) from users
     where phone = #{phone}
   </select>
 

@@ -15,6 +15,7 @@ import com.qf.service.ItemService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,6 +99,17 @@ public class ItemServiceImpl implements ItemService {
         }
         PageInfo<Item> pageInfo = new PageInfo<>(domesticList);
         return pageInfo;
+    }
+
+    @Override
+    public List<Images> top3() {
+        List<Integer> top3 = itemMapper.top3();
+        List list = new ArrayList();
+        for (Integer itemid : top3) {
+            Images images = imagesMapper.findone(itemid);
+            list.add(images);
+        }
+        return list;
     }
 
     @Override

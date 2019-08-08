@@ -42,6 +42,14 @@
     id, title, price, des, address, `like`, publish, sale, uid, fuid, fdes, fiid, colcount
   </sql>
 
+  <!--查询点赞前三的商品-->
+  <select id="top3" resultType="java.lang.Integer">
+    select id from item i
+    where (
+    select count(*) from item
+    where i.`like` <![CDATA[<]]> `like`) <![CDATA[<]]> 3
+    order by `like` desc
+  </select>
   <!--查询个人发布数-->
   <select id="findPublishCount" resultType="java.lang.Integer">
     select COUNT(*) from item

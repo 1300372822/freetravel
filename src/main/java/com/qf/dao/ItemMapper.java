@@ -25,6 +25,9 @@ public interface ItemMapper {
     //查询国内
     List<Item> findnearby(Map map);
 
+    //点赞前三的商品
+    List<Integer> top3();
+
     int deleteByPrimaryKey(Integer id);
 
     int insert(Item record);

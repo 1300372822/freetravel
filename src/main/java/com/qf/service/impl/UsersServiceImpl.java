@@ -26,11 +26,8 @@ public class UsersServiceImpl implements UsersService {
     private ItemMapper itemMapper;
 
     @Override
-    public boolean isUserExistByPhone(String phone) {
-        if (usersMapper.isUserExistByPhone(phone)>0){
-            return true;
-        }
-        return false;
+    public int isUserExistByPhone(String phone) {
+        return usersMapper.isUserExistByPhone(phone);
     }
 
     //登录
@@ -73,8 +70,9 @@ public class UsersServiceImpl implements UsersService {
     }
 
     @Override
+    @Transactional
     public int insertSelective(Users record) {
-        return 0;
+        return usersMapper.insertSelective(record);
     }
 
     //主键查询

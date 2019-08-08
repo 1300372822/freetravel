@@ -14,6 +14,12 @@
     select id,imageurl from images
     where iid = #{iid}
   </select>
+  <!--通过商品id查询一张商品照片-->
+  <select id="findone" resultType="java.lang.Integer">
+    select id,imageurl from images im where iid=#{iid}
+    and (select count(*) from images where im.id>id)<![CDATA[<]]>1
+    order by id
+  </select>
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     select 
     <include refid="Base_Column_List" />

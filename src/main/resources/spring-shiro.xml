@@ -30,7 +30,7 @@ http://www.springframework.org/schema/mvc
     <!--3.定义shiro过滤器 id="filter-name的值"-->
     <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
         <property name="securityManager" ref="manager"></property>
-        <property name="loginUrl" value="/tologin"></property>  <!--登录请求的路径-->
+        <property name="loginUrl" value="/login"></property>  <!--登录请求的路径-->
         <property name="unauthorizedUrl" value="/error.jsp"></property>
         <property name="successUrl" value="/success.jsp"></property>
         <property name="filterChainDefinitions">
@@ -43,6 +43,7 @@ http://www.springframework.org/schema/mvc
                 /findhot=anon
                 /finddomestic=anon
                 /findnearby=anon
+                /reg=anon
                 <!--测试-->
                 <!--  /user/add=perms[user:create]
                /student/add=perms[student:create]-->
